@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, Main!</string>
+    <string name="app_name">Spycatch</string>
+    
+	<string name="txtview_main_Spycatch">Spycatch</string>
+	<string name="txtview_login_Spycatch">Spycatch</string>
+	<string name="txtview_login_Password">Password</string>
+	
+	
+	<string name="btn_dashboard_Gallery">Gallery</string>
+	<string name="btn_dashboard_Settings">Settings</string>
+	<string name="btn_dashboard_About">About</string>
+	
+	<string name="txtview_gallery_Tiitle">Gallery</string>
+	<string name="txtview_about_Title">About</string>
+	
+	<string name="txtview_about_body">Description of Application and it\'s features. How to use text</string>
+	
+	<string name="loadingdialog">Please wait...</string>
+	
+	<string name="txtview_settings_Title">Settings</string>
+	<string name="txtview_setting_Email">Email(gmail only)</string>
+	<string name="txtview_settings_Password">Password</string>
+	<string name="txtview_settings_SendTo">Send To</string>
+	<string name="txtview_settings_WeekDay">Weekdays</string>
+	<string name="txtview_settings_FromTime">From Time</string>
+	<string name="txtview_settings_ToTime">To Time</string>
+	
+	<string name="btn_done">Done</string>
+	<string name="btn_Cancel">Cancel</string>
+	
+	<string name="RateUs">Rate us!</string>
+	<string name="BuyPro">Buy Pro</string>
+	
+</resources>

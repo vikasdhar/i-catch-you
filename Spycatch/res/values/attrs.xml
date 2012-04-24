@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FlingAndScrollViewer">
+        <attr name="default_screen" format="integer"/>
+    </declare-styleable>
+    
+    
+    <!-- View styles -->
+	<attr name="Theme_Title_Bg" format="reference" />
+	<attr name="Theme_Title_Text_Color" format="reference" />
+	<attr name="Theme_Music_Volum" format="reference" />
+	<attr name="Theme_WallPaper" format="reference" />
+	<attr name="Theme_Bottom_Frame" format="reference" />
+	<attr name="Theme_Button" format="reference" />
+    
+</resources>

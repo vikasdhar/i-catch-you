@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android" 
+	android:orientation="vertical"
+  	android:layout_width="fill_parent"
+  	android:layout_height="fill_parent"
+  	>
+	<LinearLayout
+	  android:orientation="horizontal"
+	  android:layout_width="fill_parent"
+	  android:layout_height="wrap_content"
+	  android:weightSum="1"
+	  android:layout_margin="10dp"
+	  >
+	  <RelativeLayout
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:layout_weight="0.3"
+			android:gravity="center_vertical|left"
+			>
+			<TextView
+				android:id="@+id/txtview_setting_Title"
+			 	android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				style="@style/Setting_Big_Text"
+				android:layout_alignParentLeft="true"
+				/>
+			<TextView
+				android:id="@+id/txtview_setting_SubTitle"
+			 	android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				style="@style/SmallText"
+				android:layout_below="@+id/txtview_setting_Title"
+				/>
+		</RelativeLayout>	
+		<LinearLayout
+			android:id="@+id/view_setting_checkbox"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:orientation="vertical"
+			android:layout_weight="0.7"
+			android:gravity="center|center_horizontal"
+			>
+			 <CheckBox
+				android:id="@+id/cbox_setting_Checkbox"
+			 	android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				/>	
+		</LinearLayout>
+   
+	</LinearLayout>
+	
+</LinearLayout>
+
