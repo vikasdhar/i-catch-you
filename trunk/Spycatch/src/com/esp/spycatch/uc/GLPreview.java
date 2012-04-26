@@ -5,6 +5,7 @@ import java.io.IOException;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.media.AudioManager;
 import android.util.AttributeSet;
@@ -17,7 +18,7 @@ import com.esp.spycatch.util.Log;
 public class GLPreview extends SurfaceView implements SurfaceHolder.Callback{
 
 	private SurfaceHolder surfaceHolder;
-	public static Camera camera;
+	public Camera camera;
 	
 	public GLPreview(Context context) {
 		super(context);
@@ -48,6 +49,7 @@ public class GLPreview extends SurfaceView implements SurfaceHolder.Callback{
 		Log.print(this.getClass().toString(), "surfaceCreated()");
 		
 		camera = Camera.open();
+		//camera = Camera.open(CameraInfo.CAMERA_FACING_FRONT);
 
 		try {
 			camera.setPreviewDisplay(this.surfaceHolder);
@@ -102,5 +104,5 @@ public class GLPreview extends SurfaceView implements SurfaceHolder.Callback{
 			
 			camera.autoFocus(new CustomAutoFoucsCallback());
 		}
-	}		
+	}
 }

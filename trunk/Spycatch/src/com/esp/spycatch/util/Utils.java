@@ -446,6 +446,14 @@ public class Utils {
 		return mDate.getTime();
 	}
 	
+	public static String getMilisecondToDate(long yourmilliseconds){
+		Log.print("Utils |=> getMilisecondToDate()"," yourmilliseconds : "+ yourmilliseconds);
+		Date resultdate = new Date(yourmilliseconds);
+		Log.print("Utils |=> getMilisecondToDate()"," "+ Utils.convertDateToString(resultdate,"MMM dd,yyyy HH:mm"));
+		return Utils.convertDateToString(resultdate,"MMM dd,yyyy HH:mm");
+	}
+	
+	
 	public static boolean matchDay(String days) {
 		
 		Calendar cal = Calendar.getInstance();
@@ -557,9 +565,6 @@ public class Utils {
     		}
             
             return result;
-        }
-	 
-        
- 
-	}
+        } 
+	} 
 }

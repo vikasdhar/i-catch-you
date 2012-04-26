@@ -1,17 +1,20 @@
 package com.esp.spycatch.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -26,6 +29,7 @@ import com.esp.spycatch.bll.ImageBL;
 import com.esp.spycatch.uc.PageTitle;
 import com.esp.spycatch.util.Const;
 import com.esp.spycatch.util.Log;
+import com.esp.spycatch.util.Storage;
 import com.esp.spycatch.util.Utils;
 
 public class PhotoGallery extends Activity implements OnClickListener{
@@ -65,14 +69,15 @@ public class PhotoGallery extends Activity implements OnClickListener{
         btn_next.setOnClickListener(this);
         
     	Const.CONTEXT = this;
-		intPageNo = Integer.parseInt(getIntent().getExtras().getString("PAGENO"));
-		Log.print("","[ PAGE WATCH ] " + intPageNo);
-		this.generateUI();
+    	intPageNo = Integer.parseInt(getIntent().getExtras().getString("PAGENO"));
+    	Log.print("","[ PAGE WATCH ] " + intPageNo);
+    	this.generateUI();
     }
     
     @Override
 	protected void onResume() {
 		super.onResume();
+		
 	}
     
 	public void generateUI(){
@@ -84,7 +89,7 @@ public class PhotoGallery extends Activity implements OnClickListener{
     	
     	Display display = null;
     	int cols = 0; 
-    	File imageDir = null;
+    	//File imageDir = null;
     	String files[] = null;
     	
     	boolean doAddLinearLayout = false;
@@ -99,26 +104,55 @@ public class PhotoGallery extends Activity implements OnClickListener{
     		
     		Log.print("Cols : ", cols+ "");
     		
+			if (arrListImageBean != null) {
+    			if(!arrListImageBean.isEmpty()){
+    				arrListImageBean.clear();
+    				arrListImageBean = null;
+    			}else{
+    				
+    				arrListImageBean = null;
+    			}
+    		}
+    		
     		// Get 50 image
     		ImageBL mImageBL = new ImageBL();
-    		if(arrListImageBean == null)
-    		arrListImageBean = mImageBL.Page_List(intPageNo);
-    		Log.print("ARRAYLIST : ", arrListImageBean.size()+ "");
+    		
+    		if(arrListImageBean == null){
+    			arrListImageBean = mImageBL.Page_List(intPageNo);
+    			Log.print("ARRAYLIST : ", arrListImageBean.size()+ "");
+    		}
     		
     		
-			if (arrListImageBean.size() == NumberOfIteam && intPageNo > 1) {
+    		if (arrListImageBean.size() == NumberOfIteam && intPageNo > 1) {
 				// Next Button Visible
-				btn_next.setVisibility(View.VISIBLE);
+    			btn_next.setVisibility(View.VISIBLE);
+    			btn_next.setBackgroundResource(R.drawable.btn_next_selector);
+				
 				btn_Pre.setVisibility(View.VISIBLE);
+				btn_Pre.setBackgroundResource(R.drawable.btn_prv_selector);
+				
 			} else if (arrListImageBean.size() < NumberOfIteam && intPageNo > 1) {
-				btn_next.setVisibility(View.GONE);
+//				btn_next.setVisibility(View.GONE);
+				btn_next.setBackgroundResource(R.drawable.btn_next_disabled);
+				btn_next.setEnabled(true);
 				btn_Pre.setVisibility(View.VISIBLE);
 			} else if (arrListImageBean.size() == NumberOfIteam
 					&& intPageNo == 1) {
 				btn_next.setVisibility(View.VISIBLE);
-				btn_Pre.setVisibility(View.GONE);
+//				btn_Pre.setVisibility(View.GONE);
+				btn_Pre.setBackgroundResource(R.drawable.btn_prv_disabled);
+				btn_Pre.setEnabled(true);
+				
+			}else if(arrListImageBean.size() != NumberOfIteam && intPageNo == 1){
+				
+				btn_next.setBackgroundResource(R.drawable.btn_next_disabled);
+				btn_next.setEnabled(true);
+				btn_Pre.setBackgroundResource(R.drawable.btn_prv_disabled);
+				btn_Pre.setEnabled(true);
+				
 			}
-
+    		
+			
     		//Utils.arrListToArray(arrListImageBean);
     		files = Utils.arrListToArray(arrListImageBean);
     		
@@ -143,18 +177,56 @@ public class PhotoGallery extends Activity implements OnClickListener{
     			final int index = i;
     			
     			view = LayoutInflater.from(Const.CONTEXT).inflate(R.layout.image_container,null,true);
+    			view.setTag("0");
     			view.setOnClickListener(new OnClickListener() {
 					
 					public void onClick(View v) {
-						
+						if(v.getTag().equals("1"))
+						{
+							v.setTag("0");
+							return;
+						}
 						Toast.makeText(PhotoGallery.this,arrListImageBean.get(index).getFileName(),Toast.LENGTH_SHORT).show();
 						Intent viewIntent = new Intent(PhotoGallery.this,PhotoViewerActivity.class);
 						viewIntent.putExtra("FileName",arrListImageBean.get(index).getFileName());
 						viewIntent.putExtra("Index",index+"");
-						//viewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-						startActivity(viewIntent);
+						viewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+						startActivityForResult(viewIntent,100);
+						
 					}
 				});
+    			
+    			view.setOnLongClickListener(new OnLongClickListener() {
+					
+					public boolean onLongClick(final View v) {
+						v.setTag("1");
+						
+						AlertDialog.Builder builder = new AlertDialog.Builder(PhotoGallery.this);
+						builder.setMessage("Are you sure you want to Delete?")
+						       .setCancelable(false)
+						       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+						           public void onClick(DialogInterface dialog, int id) {
+						              
+						        	  // ViewGroup parent = (ViewGroup) v.getParent();
+						          	  // parent.removeView(v);
+						        	   dialog.dismiss();
+						        	   new RemoveView(index).execute();
+						        	   
+						           }
+						       })
+						       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+						           public void onClick(DialogInterface dialog, int id) {
+						                dialog.cancel();
+						           }
+						       });
+						
+						AlertDialog alert = builder.create();
+						alert.show();
+						
+						return false;
+					}
+				});
+    			
     			image = (ImageView)view.findViewById(R.id.image);
     			image.setLayoutParams(lparams);
     			//image.setImageBitmap(Utils.decodeFile(Const.THUMBNAIL_DIR + "/"+ files[i],75,75));
@@ -196,7 +268,7 @@ public class PhotoGallery extends Activity implements OnClickListener{
     	//release
     	display = null;
     	view= null;
-    	imageDir = null;
+    	//imageDir = null;
     	files = null;
     }
     
@@ -215,6 +287,7 @@ public class PhotoGallery extends Activity implements OnClickListener{
 				Log.print("Path : ", Const.THUMBNAIL_DIR + "/"+ imageName);
 				this.image.setImageBitmap(Utils.decodeFile(Const.THUMBNAIL_DIR + "/"+ imageName,50,50));							
 			}catch(Exception e){
+				e.printStackTrace();
 				Log.print("Exception Path : ", Const.THUMBNAIL_DIR + "/"+ imageName);
 			}
 		}
@@ -227,7 +300,6 @@ public class PhotoGallery extends Activity implements OnClickListener{
 			
 			
 			if(intPageNo > 1){
-				arrListImageBean.clear();
 				intPageNo--;
 				Intent mItent = new Intent(PhotoGallery.this,PhotoGallery.class);
 				mItent.putExtra("PAGENO",String.valueOf(intPageNo));
@@ -235,13 +307,13 @@ public class PhotoGallery extends Activity implements OnClickListener{
 				Toast.makeText(PhotoGallery.this,String.valueOf(intPageNo),Toast.LENGTH_SHORT).show();
 				startActivity(mItent);
 				finish();
+				
 			}
 			break;
 
 		case R.id.btn_next:
 			
 			if(arrListImageBean.size() == NumberOfIteam){
-				arrListImageBean.clear();
 				intPageNo++;
 				Intent mItent = new Intent(PhotoGallery.this,PhotoGallery.class);
 				mItent.putExtra("PAGENO",String.valueOf(intPageNo));
@@ -256,5 +328,58 @@ public class PhotoGallery extends Activity implements OnClickListener{
 		default:
 			break;
 		};
+	}
+	
+	
+	class RemoveView extends AsyncTask<Void,Void,Integer>{
+
+		private int Index;
+		
+		public RemoveView(int Index) {
+			this.Index = Index;
+		}
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			
+		}
+		@Override
+		protected Integer doInBackground(Void... params) {
+			int Result = 0;
+			ImageBL mBl = new ImageBL();
+			if(mBl.Delete(arrListImageBean.get(this.Index).getFileName()) == 0){
+				
+				Storage.IsFileAvailableDelete(Const.IMAGE_DIR + "/" + arrListImageBean.get(this.Index).getFileName());
+				Storage.IsFileAvailableDelete(Const.TEMP_IMAGE_PATH + "/" + arrListImageBean.get(this.Index).getFileName());
+				
+			}else{
+				
+				Result = -1;
+			}
+			
+			return Result;
+		}
+		@Override
+		protected void onPostExecute(Integer result) {
+			super.onPostExecute(result);
+			
+			if(result == 0){
+				Intent mItent = new Intent(PhotoGallery.this,PhotoGallery.class);
+	        	mItent.putExtra("PAGENO",String.valueOf(intPageNo));
+	        	mItent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+	        	Toast.makeText(PhotoGallery.this,String.valueOf(intPageNo),Toast.LENGTH_SHORT).show();
+	        	startActivity(mItent);
+	        	finish();
+			}else{
+				Toast.makeText(PhotoGallery.this,"No able to remove!!",Toast.LENGTH_SHORT).show();
+			}
+		}
+		
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		System.out.println(" [ requestCode ] " + requestCode + " [ resultCode ]"+ resultCode);
 	}
 }

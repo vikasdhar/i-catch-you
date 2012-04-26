@@ -10,9 +10,16 @@
 	   	android:layout_height="wrap_content"
 	   	android:layout_alignParentTop="true"
 		/>    
+	<include 
+		android:id="@+id/footer_gallery"
+		layout="@layout/footer" 
+		android:layout_width="fill_parent"
+		android:layout_height="50dp" 
+		android:layout_alignParentBottom="true"
+		/>	
 	<RelativeLayout
 		android:id="@+id/pageNavigation"
-		android:layout_below="@+id/pageTitle"
+		android:layout_above="@+id/footer_gallery"
 		android:layout_width="fill_parent"
        	android:layout_height="wrap_content"
        	>
@@ -20,34 +27,25 @@
        		android:id="@+id/btn_prv"
        		android:layout_width="wrap_content"
        	 	android:layout_height="wrap_content"
-       	 	android:background="@drawable/btn_prv"
+       	 	android:background="@drawable/btn_prv_selector"
        	 	android:layout_alignParentLeft="true"
        	 	android:layout_marginLeft="10dp"
-       	 	android:visibility="gone"
-       		/>
+       	 	/>
   		<Button
   			android:id="@+id/btn_next"
 	   		android:layout_width="wrap_content"
 	   	 	android:layout_height="wrap_content"
-	   	 	android:background="@drawable/btn_next"
+	   	 	android:background="@drawable/btn_next_selector"
 	   	 	android:layout_alignParentRight="true"
 	   	 	android:layout_marginRight="10dp"
-	   	 	android:visibility="gone"
-	   		/>	
-	</RelativeLayout>		
+	   	 	/>	
+	</RelativeLayout>	
+		
 	<ImageView
 		android:id="@+id/imageView"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-		android:layout_below="@+id/pageNavigation"
-		android:layout_above="@+id/footer_gallery"
-		/>
-	
-	<include 
-		android:id="@+id/footer_gallery"
-		layout="@layout/footer" 
-		android:layout_width="fill_parent"
-		android:layout_height="50dp" 
-		android:layout_alignParentBottom="true"
+		android:layout_below="@+id/pageTitle"
+		android:layout_above="@+id/pageNavigation"
 		/>
 </RelativeLayout>
