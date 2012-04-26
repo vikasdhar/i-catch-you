@@ -94,8 +94,12 @@ public class ImageBL {
 		StringBuilder Query = new StringBuilder();
 		ArrayList<ImageBean> objList = new ArrayList<ImageBean>();
 		Cursor objCursor = null;
+		
 		int start = (PageNo - 1) * 50 + 1;
 		int end = start + 49;
+		
+//		int start = (PageNo - 1) * 3;
+//		int end = 3;
 		
 		try {
 
@@ -213,5 +217,36 @@ public class ImageBL {
 		
 		return;
 	}
+	
+	public int Delete(String strFileName){
+		
+		int Result = 0;
+		DBHelper objDBHelper = new DBHelper();	
+		StringBuilder Query = new StringBuilder();
+		try {
+			
+			Query.append("Delete From ")
+			.append("Image WHERE FileName='")
+			 .append(strFileName)
+			 .append("'");
+			
+			Log.print("ImageBL |-> List | Delete " + Query.toString());
+			objDBHelper.execute(Query.toString());
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.error(this.getClass()+" :: Delete() ", e.getMessage());
+			Result = -1;
+			
+			
+		} finally {
+			objDBHelper = null;
+			Query = null;
+		}
+		
+		return Result;
+		
+	}
+	
 	
 }

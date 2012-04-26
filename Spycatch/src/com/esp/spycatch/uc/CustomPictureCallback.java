@@ -9,6 +9,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
@@ -58,6 +59,7 @@ public class CustomPictureCallback  implements PictureCallback {
 		Paint paint;
 		Paint watermarkPaint;
 		Paint locationPaint; 
+		Matrix matrix;
 		
 		try {
 			
@@ -73,7 +75,13 @@ public class CustomPictureCallback  implements PictureCallback {
 				
 				int height = cameraBitmap.getHeight();
 				int width = cameraBitmap.getWidth();
-							
+
+				
+				matrix = new Matrix();
+			    matrix.postRotate(-90);
+				
+			    cameraBitmap = Bitmap.createBitmap(cameraBitmap, 0, 0, width, height, matrix, true);
+			    							
 				//Create water mark
 				drawingCache = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 				canvas = new Canvas(drawingCache);

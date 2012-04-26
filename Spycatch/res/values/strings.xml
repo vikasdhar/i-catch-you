@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+
+	<string name="AdsUnitId">a14f0c4c6a0dd69</string>
+
     <string name="hello">Hello World, Main!</string>
     <string name="app_name">Spycatch</string>
     

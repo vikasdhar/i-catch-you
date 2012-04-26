@@ -3,9 +3,11 @@ package com.esp.spycatch.process;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
+import android.os.Bundle;
 import android.widget.Toast;
 
 import com.esp.spycatch.util.Const;
@@ -25,75 +27,82 @@ public class UpdateLocation extends BroadcastReceiver{
 		
 		this.start();
 	}
-
-	public void start(){
-		Location location;
-		Criteria criteria;
-		
-		int count=0;
-		
+	
+	public void start(){		
 		this.mGPSLocationManager = (LocationManager) Const.CONTEXT
 				.getSystemService(Context.LOCATION_SERVICE);
+				
+		LocationListener mGPSLocationListener = new GPSLocationListener();
 		
 		if (this.mGPSLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-			count++;
-		}
-		
-		this.mNetLocationManager = (LocationManager) Const.CONTEXT
-				.getSystemService(Context.LOCATION_SERVICE);
-		
-		if (this.mNetLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-			count++;			
-		}
-		
-		if (count == 0){
+			this.mGPSLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 1, mGPSLocationListener);
+		}else{
 			Pref.setValue("IS_LOCATION_AVAILABLE", "0");
 			Toast
 			.makeText(
 					Const.CONTEXT,
 					"GPS system is not available.",Toast.LENGTH_LONG).show();
-			Log.debug(this.getClass() + "", "GPS and Netwok provider are not working");
-		}else{
-			
-			criteria = new Criteria();
-			criteria.setAccuracy(Criteria.ACCURACY_FINE);
-			criteria.setAltitudeRequired(false);
-			criteria.setBearingRequired(false);
-			
-			location = this.mGPSLocationManager.getLastKnownLocation(this.mGPSLocationManager.getBestProvider(criteria, true));
-			
-			if (location != null){
-				Const.latitude = location.getLatitude()+"";
-				Const.longitude = location.getLongitude()+"";
-				Pref.setValue("IS_LOCATION_AVAILABLE", "1");
-				
-				Log.print("GPS Reading :: ", "============================================");
-				Log.print("GPS Reading :: ", "Longitude : " + Const.longitude );
-				Log.print("GPS Reading :: ", "Laitude : " + Const.latitude );
-				Log.print("GPS Reading :: ", "============================================");
-				
-			}else{
-				location = this.mNetLocationManager.getLastKnownLocation(this.mGPSLocationManager.getBestProvider(criteria, true));
-				
-				if (location != null){
-					Const.latitude = location.getLatitude()+"";
-					Const.longitude = location.getLongitude()+"";
-					Pref.setValue("IS_LOCATION_AVAILABLE", "1");
-					
-					Log.print("NET Reading :: ", "============================================");
-					Log.print("NET Reading :: ", "Longitude : " + Const.longitude );
-					Log.print("NET Reading :: ", "Laitude : " + Const.latitude );
-					Log.print("NET Reading :: ", "============================================");
-					
-				}else{
-					Pref.setValue("IS_LOCATION_AVAILABLE", "0");
-					Toast
-					.makeText(
-							Const.CONTEXT,
-							"GPS system is not available.",Toast.LENGTH_LONG).show();
-					Log.debug(this.getClass() + "", "GPS and Netwok provider are not working");					
-				}
-			}
 		}
 	}
+	
+	private class GPSLocationListener implements LocationListener {
+
+		public void onLocationChanged(Location location) {
+			try {
+				if (location != null) {
+
+					Const.latitude = String.valueOf(location.getLatitude());
+					Const.longitude = String.valueOf(location.getLongitude());
+					
+					Log.debug("GPS Reading :: ", "Longitude : " + Const.longitude + " <br/>Laitude : " + Const.latitude);
+					
+					Log.print("GPS Reading :: ", "============================================");
+					Log.print("GPS Reading :: ", "Longitude : " + Const.longitude );
+					Log.print("GPS Reading :: ", "Laitude : " + Const.latitude );
+					Log.print("GPS Reading :: ", "============================================");
+					
+					Pref.setValue("IS_LOCATION_AVAILABLE", "1");
+					
+					mGPSLocationManager.removeUpdates(this);
+				}
+
+			} catch (Exception e) {
+				Pref.setValue("IS_LOCATION_AVAILABLE", "0");
+				Log.error("Main :: onLocationChanged() :: ", e);
+			}
+		}
+
+		public void onProviderDisabled(String provider) {
+
+			Pref.setValue("IS_LOCATION_AVAILABLE", "0");
+			
+			if (provider == LocationManager.GPS_PROVIDER) {
+
+				Toast
+						.makeText(
+								Const.CONTEXT,
+								"Wireless networks is disabled.\n\nGo to \"Location and Security Settings\" to enable it.",
+								Toast.LENGTH_LONG).show();
+				Log.error(this.getClass()+"", "Wireless networks is disabled.");
+			}
+
+		}
+
+		public void onProviderEnabled(String provider) {
+		}
+
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+
+			if (status == LocationProvider.TEMPORARILY_UNAVAILABLE) {
+				Pref.setValue("IS_LOCATION_AVAILABLE", "0");
+				Log.error(this.getClass()+"", "Wireless networks is TEMPORARILY_UNAVAILABLE.");
+			} else if (status == LocationProvider.OUT_OF_SERVICE) {
+				Pref.setValue("IS_LOCATION_AVAILABLE", "0");
+				Log.error(this.getClass()+"", "Wireless networks is OUT_OF_SERVICE.");
+			} else if (status == LocationProvider.AVAILABLE) {
+				Log.error(this.getClass()+"", "Wireless networks is AVAILABLE.");
+			}
+		}
+
+	}/* End of Class GPSLocationListener */
 }
