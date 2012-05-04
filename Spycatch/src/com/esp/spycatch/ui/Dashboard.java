@@ -17,7 +17,7 @@ import com.google.ads.AdView;
 public class Dashboard extends Activity implements OnClickListener {
 
 	private ActionItem actionGallery, actionAbout, actionSettings;
-	private Button btn_dashboard_exit,btn_dashboard_rating;
+	private Button btn_dashboard_exit,btn_dashboard_rating,btn_dashboard_sharing;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -43,8 +43,10 @@ public class Dashboard extends Activity implements OnClickListener {
 		
 	    btn_dashboard_exit = (Button)findViewById(R.id.btn_dashboard_exit);
 	    btn_dashboard_rating = (Button)findViewById(R.id.btn_dashboard_rating);
+	    btn_dashboard_sharing = (Button)findViewById(R.id.btn_dashboard_sharing);
 	    btn_dashboard_exit.setOnClickListener(this);
 	    btn_dashboard_rating.setOnClickListener(this);
+	    btn_dashboard_sharing.setOnClickListener(this);
 	    
 	}
 
@@ -52,7 +54,7 @@ public class Dashboard extends Activity implements OnClickListener {
 		switch (v.getId()) {
 		case R.id.actionGallery:
 			Intent mItent = new Intent(getApplicationContext(),PhotoGallery.class);
-			mItent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+			//mItent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 			mItent.putExtra("PAGENO","1");
 			startActivity(mItent);
 			break;
@@ -73,6 +75,14 @@ public class Dashboard extends Activity implements OnClickListener {
 			intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 			startActivity(intent);
 			
+			break;
+		case R.id.btn_dashboard_sharing:
+			Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
+			shareIntent.setType("text/plain");
+			shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+			shareIntent.putExtra(Intent.EXTRA_SUBJECT,"SpyCatch");
+			shareIntent.putExtra(Intent.EXTRA_TEXT, "SpyCatch");
+			startActivity(Intent.createChooser(shareIntent, "Share SpyCatch"));
 			break;
 		default:
 			break;

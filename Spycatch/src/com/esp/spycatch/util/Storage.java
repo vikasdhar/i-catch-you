@@ -85,6 +85,29 @@ public class Storage {
 		
 	}
 	
+
+	public static void verifyTempImage()throws IOException{
+		
+		File dir = new File(Const.TEMP_IMAGE_DIR);
+
+		if (!dir.exists()) {
+			dir.mkdirs();
+			
+		}else{
+			
+			File cacheDir = new File(Const.TEMP_IMAGE_DIR);
+	        //clear SD cache
+	        File[] files=cacheDir.listFiles();
+	        if (files != null && files.length > 0){
+		        for(File f:files)
+		            f.delete();
+	        }
+		}
+
+		dir = null;
+		
+	}
+	
 	public static int copyResourceFiles(int level) {
 		int i = 0;
 		switch (level) {

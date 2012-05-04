@@ -1,14 +1,5 @@
 package com.esp.spycatch;
 
-import com.esp.spycatch.process.UpdateLocation;
-import com.esp.spycatch.ui.Dashboard;
-import com.esp.spycatch.ui.Login;
-import com.esp.spycatch.util.Const;
-import com.esp.spycatch.util.Log;
-import com.esp.spycatch.util.Pref;
-import com.esp.spycatch.util.Storage;
-import com.esp.spycatch.util.Utils;
-
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -17,6 +8,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
+import com.esp.spycatch.process.UpdateLocation;
+import com.esp.spycatch.ui.Dashboard;
+import com.esp.spycatch.ui.Login;
+import com.esp.spycatch.util.Const;
+import com.esp.spycatch.util.Log;
+import com.esp.spycatch.util.Pref;
+import com.esp.spycatch.util.Storage;
+import com.esp.spycatch.util.Utils;
 
 public class Main extends Activity {
     
@@ -29,6 +29,7 @@ public class Main extends Activity {
         setContentView(R.layout.main);
         Const.CONTEXT = this;
         Utils.systemUpgrade();
+        
     	if (!UpdateLocation.STARTED){
         	//Wake up Update Location Service
 			AlarmManager amUpdateLocation=(AlarmManager)Const.CONTEXT.getSystemService(Context.ALARM_SERVICE);
@@ -40,6 +41,8 @@ public class Main extends Activity {
 
             Storage.verifyThumbnailPath();
         	Storage.verifyCatchImagePath();
+        	Storage.verifyTempImage();
+        	
         }catch (Exception e) {
         	e.printStackTrace();
 		}
@@ -51,13 +54,17 @@ public class Main extends Activity {
         	
         	int Result = Storage.copyResourceFiles(0);
             Log.print("Main | onCreate "," | *** |copyResourceFiles |****|" + Result);
-            
         }
+        
+        
         
         SplashHandler mHandler = new SplashHandler();
         Message mMessage = new Message();
         mMessage.what = SPALSH_FINISH;
         mHandler.sendMessageDelayed(mMessage,SPLASH_DELAY_TIME);        
+        
+    
+        
     }
     
     
@@ -84,4 +91,6 @@ public class Main extends Activity {
 			}
     	}
     }
+    
+	
 }

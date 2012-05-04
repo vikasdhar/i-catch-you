@@ -49,15 +49,18 @@ public class Utils {
 		switch(level){
 			case 0:
 				Utils.upgradeLevel1();
+				level++;
 			case 1:
 				//upgradeLevel2();
 		}
 		
-		level++;
+		
 		Pref.setValue("LEVEL", level + "");
 	}
 
 	public static void upgradeLevel1(){
+		Pref.setValue("PRODUCT", "FREE");
+		
     	//Set default value		
 		new DBHelper().upgrade(0);
 	}
@@ -558,6 +561,44 @@ public class Utils {
         	
         	try {
     			Storage.copyFile(new FileInputStream(Const.IMAGE_DIR + "/" + fileName), new FileOutputStream(Const.CATCH_IMAGE_DIR + "/" + Utils.trimExtension(fileName)+".png"));
+    		} catch (FileNotFoundException e) {
+    			e.printStackTrace();
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		}
+            
+            return result;
+        } 
+	}
+	
+	
+	
+	public static int ShareImage(String fileName){
+		
+		int result = 1;
+		File originalFile = new File(Const.IMAGE_DIR + "/" + fileName);
+	     
+		boolean fileExists = originalFile.exists();
+	 
+        boolean isDirectory = originalFile.isDirectory();
+	 
+        if (!fileExists) {
+ 
+            Log.print("","File does not exist: " + Const.IMAGE_DIR + "/" + fileName);
+            Log.print("","Rename Operation Aborted.");
+            return result = -1;
+            
+        }else if (isDirectory) {
+        	
+        	Log.print("","The parameter you have provided is a directory: "
+                            + Const.IMAGE_DIR + "/" + fileName);
+        	Log.print("","Rename Operation Aborted.");
+        	return result = -1;
+        	
+        }else{
+        	
+        	try {
+    			Storage.copyFile(new FileInputStream(Const.IMAGE_DIR + "/" + fileName), new FileOutputStream(Const.TEMP_IMAGE_DIR + "/" + Utils.trimExtension(fileName)+".png"));
     		} catch (FileNotFoundException e) {
     			e.printStackTrace();
     		} catch (IOException e) {

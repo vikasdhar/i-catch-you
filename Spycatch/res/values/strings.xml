@@ -2,10 +2,10 @@
 <resources>
 
 
-	<string name="AdsUnitId">a14f0c4c6a0dd69</string>
+	<string name="AdsUnitId">a14fa21408b0c88</string>
 
     <string name="hello">Hello World, Main!</string>
-    <string name="app_name">Spycatch</string>
+    <string name="app_name">SpyCatch</string>
     
 	<string name="txtview_main_Spycatch">Spycatch</string>
 	<string name="txtview_login_Spycatch">Spycatch</string>
@@ -36,5 +36,11 @@
 	
 	<string name="RateUs">Rate us!</string>
 	<string name="BuyPro">Buy Pro</string>
+	
+	
+	<string name="Send_to">Send to</string>
+	<string name="Delete">Delete Photo</string>
+	<string name="showlocation">Show location</string>
+	
 	
 </resources>

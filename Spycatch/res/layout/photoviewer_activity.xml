@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/bg_page" 
     >
 	<com.esp.spycatch.uc.PageTitle
 		android:id="@+id/pageTitle"
@@ -29,14 +28,48 @@
        	 	android:layout_height="wrap_content"
        	 	android:background="@drawable/btn_prv_selector"
        	 	android:layout_alignParentLeft="true"
-       	 	android:layout_marginLeft="10dp"
+			android:layout_marginLeft="10dp"
+	   	 	android:layout_marginRight="10dp"
        	 	/>
+        <LinearLayout
+        	android:layout_width="wrap_content"
+       	 	android:layout_height="wrap_content"
+        	android:layout_centerInParent="true"
+        	android:orientation="horizontal"
+        	>
+       		<Button
+	  			android:id="@+id/btn_Delete"
+		   		android:layout_width="wrap_content"
+		   	 	android:layout_height="wrap_content"
+		   	 	android:background="@drawable/btn_delete_selector"
+		   	 	android:layout_marginLeft="10dp"
+		   	 	android:layout_marginRight="10dp"
+		   	 	/>	
+		   	<Button
+	  			android:id="@+id/btn_Share"
+		   		android:layout_width="wrap_content"
+		   	 	android:layout_height="wrap_content"
+		   	 	android:background="@drawable/btn_share_selector"
+		   		android:layout_marginLeft="10dp"
+		   	 	android:layout_marginRight="10dp"
+	   	 		/>	
+		   	 <Button
+	  			android:id="@+id/btn_location"
+		   		android:layout_width="wrap_content"
+		   	 	android:layout_height="wrap_content"
+		   	 	android:background="@drawable/btn_map"
+		   	 	android:layout_marginLeft="10dp"
+		   	 	android:layout_marginRight="10dp"
+		   	 	/>	
+        </LinearLayout>
+        	 	 	
   		<Button
   			android:id="@+id/btn_next"
 	   		android:layout_width="wrap_content"
 	   	 	android:layout_height="wrap_content"
 	   	 	android:background="@drawable/btn_next_selector"
 	   	 	android:layout_alignParentRight="true"
+			android:layout_marginLeft="10dp"
 	   	 	android:layout_marginRight="10dp"
 	   	 	/>	
 	</RelativeLayout>	

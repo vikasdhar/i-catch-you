@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -33,9 +34,7 @@ import com.esp.spycatch.fb.Facebook;
 import com.esp.spycatch.fb.Facebook.DialogListener;
 import com.esp.spycatch.fb.FacebookError;
 import com.esp.spycatch.fb.SessionStore;
-import com.esp.spycatch.process.EmailReceiver;
-import com.esp.spycatch.process.FacebookReceiver;
-import com.esp.spycatch.process.MMSReceiver;
+import com.esp.spycatch.process.SharePicture;
 import com.esp.spycatch.uc.PageTitle;
 import com.esp.spycatch.util.Const;
 import com.esp.spycatch.util.Log;
@@ -56,13 +55,10 @@ public class Settings extends Activity {
 	private static final String[] PERMISSIONS = new String[] {
 			"publish_stream", "read_stream", "offline_access" };
 
-
-
 	private ProgressDialog mProgressDialog;
 
 	private CheckBox tempCheckbox = null;
-	
-	
+	private String chkTag = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -116,7 +112,15 @@ public class Settings extends Activity {
 
 		mBeanCheckBox = new CheckBoxItemBean();
 		mBeanCheckBox.setStrTitle("Advanced");
-		mBeanCheckBox.setStrSubTitle("Customize more with addition cool features");
+		mBeanCheckBox
+				.setStrSubTitle("Customize more with addition cool features");
+		mBeanCheckBox.setIsCheckBox(false);
+		mAdapterSetting.addCheckBoxItem(mBeanCheckBox);
+
+		mBeanCheckBox = new CheckBoxItemBean();
+		mBeanCheckBox.setStrTitle("Setup a screen lock");
+		mBeanCheckBox
+				.setStrSubTitle("Take picture when it is opened with code/pattern");
 		mBeanCheckBox.setIsCheckBox(false);
 		mAdapterSetting.addCheckBoxItem(mBeanCheckBox);
 
@@ -126,6 +130,23 @@ public class Settings extends Activity {
 
 			public void onItemClick(AdapterView<?> arg0, View view,
 					int position, long arg3) {
+
+				if (mData.get(position).getStrTitle().equals("Advanced")) {
+
+					Intent mIntent = new Intent(Settings.this,
+							AdvanceSettings.class);
+					mIntent.putExtra("Title", mData.get(position).getStrTitle());
+					startActivityForResult(mIntent,
+							Const.DIALOG_ADVANCE_SETTINGS);
+				}
+				if (mData.get(position).getStrTitle()
+						.equals("Setup a screen lock")) {
+
+					Intent settingIntent = new Intent(
+							DevicePolicyManager.ACTION_SET_NEW_PASSWORD);
+					startActivityForResult(settingIntent, 0);
+				}
+
 			}
 		});
 	}
@@ -189,12 +210,14 @@ public class Settings extends Activity {
 				CheckBoxItemBean mBean = (CheckBoxItemBean) mData.get(position);
 				if (mBean.isCheckbox()) {
 
-					holder.cBox.setVisibility(View.VISIBLE);
+					holder.view_setting_checkbox.setVisibility(View.VISIBLE);
 					holder.cBox.setTag(mBean.getStrTitle());
+					holder.cBox.setOnCheckedChangeListener(null);
 
 					if (mBean.getStrTitle().equals("Enable")) {
 
-						if (Pref.getValue("STOP_START_SERVICE", "True").equals("True"))
+						if (Pref.getValue("STOP_START_SERVICE", "No").equals(
+								"Yes"))
 							holder.cBox.setChecked(true);
 						else
 							holder.cBox.setChecked(false);
@@ -203,28 +226,31 @@ public class Settings extends Activity {
 
 					if (mBean.getStrTitle().equals("Password")) {
 
-						if (Pref.getValue("PASSWORD_PROTECTION", "0").equals("1"))
+						if (Pref.getValue("PASSWORD_PROTECTION", "0").equals(
+								"1"))
 							holder.cBox.setChecked(true);
 						else
 							holder.cBox.setChecked(false);
 
 					}
 					if (mBean.getStrTitle().equals("Email support")) {
-						
-						if (Pref.getValue("EMAIL_SESSION_VALID", "No").equals("Yes"))
+
+						if (Pref.getValue("EMAIL_SESSION_VALID", "No").equals(
+								"Yes"))
 							holder.cBox.setChecked(true);
 						else
 							holder.cBox.setChecked(false);
 					}
-					
+
 					if (mBean.getStrTitle().equals("MMS support")) {
-						
-						if (Pref.getValue("MMS_SESSION_VALID", "No").equals("Yes"))
+
+						if (Pref.getValue("MMS_SESSION_VALID", "No").equals(
+								"Yes"))
 							holder.cBox.setChecked(true);
 						else
 							holder.cBox.setChecked(false);
 					}
-					
+
 					if (mBean.getStrTitle().equals("Facebook support")) {
 
 						// check is Session is valid or not
@@ -233,6 +259,7 @@ public class Settings extends Activity {
 							// we reach here because he/she is login
 							holder.cBox.setChecked(true);
 						} else {
+
 							holder.cBox.setChecked(false);
 						}
 					}
@@ -248,112 +275,120 @@ public class Settings extends Activity {
 				holder.txtView_subTitle.setText(mBean.getStrSubTitle());
 				holder.cBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
-							public void onCheckedChanged(
-									CompoundButton buttonView, boolean isChecked) {
-
+							public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+								
+								
+								if(buttonView.getTag().equals("-1"))
+								{
+									tempCheckbox.setTag(chkTag);
+									return;
+								}
+								
 								if (isChecked) {
 
 									if (buttonView.getTag().equals("Enable")) {
 
-										Log.print("Setting | holder ","Enable " + isChecked);
+										Log.print("Setting | holder ",
+												"Enable " + isChecked);
+										
 										new StartAllService().execute();
 									}
 
 									if (buttonView.getTag().equals("Password")) {
-
+										
+										tempCheckbox = holder.cBox;
+										chkTag = (String)holder.cBox.getTag();
+										
 										Intent mIntent = new Intent(
 												Settings.this,
 												SetPasswordActivity.class);
 										mIntent.putExtra("Title",
 												mData.get(position)
 														.getStrTitle());
-										mIntent.putExtra("Password",
-												Pref.getValue("PASSWORD", null));
 										startActivityForResult(mIntent,
 												Const.DIALOG_PASSWORD);
 									}
-									
-									if (buttonView.getTag().equals("Email support")) {
-										
+
+									if (buttonView.getTag().equals(
+											"Email support")) {
+
 										tempCheckbox = holder.cBox;
-										Intent mIntent = new Intent(Settings.this, EmailNotification.class);
-										mIntent.putExtra("Title", mData.get(position).getStrTitle());
-										startActivityForResult(mIntent, Const.DIALOG_EMAIL_SUPPORT);
+										chkTag = (String)holder.cBox.getTag();
+										Intent mIntent = new Intent(
+												Settings.this,
+												EmailNotification.class);
+										mIntent.putExtra("Title",
+												mData.get(position)
+														.getStrTitle());
+										startActivityForResult(mIntent,
+												Const.DIALOG_EMAIL_SUPPORT);
 
 									}
-									
-									if (buttonView.getTag().equals("MMS support")) {
-										
+
+									if (buttonView.getTag().equals(
+											"MMS support")) {
+
 										tempCheckbox = holder.cBox;
-										Intent mIntent = new Intent(Settings.this, MmsNotification.class);
-										mIntent.putExtra("Title", mData.get(position).getStrTitle());
-										startActivityForResult(mIntent, Const.DIALOG_MMS_SUPPORT);
+										chkTag = (String)holder.cBox.getTag();
+										Intent mIntent = new Intent(
+												Settings.this,
+												MmsNotification.class);
+										mIntent.putExtra("Title",
+												mData.get(position)
+														.getStrTitle());
+										startActivityForResult(mIntent,
+												Const.DIALOG_MMS_SUPPORT);
 									}
 
-									
 									// if check then
 									if (buttonView.getTag().equals(
 											"Facebook support")) {
-										
-										tempCheckbox = holder.cBox;
-										mFacebook.authorize(Settings.this,
-												PERMISSIONS, -1,
-												new FbLoginDialogListener());
+
+										if (Utils.isOnline()) {
+
+											tempCheckbox = holder.cBox;
+											chkTag = (String)holder.cBox.getTag();
+											mFacebook.authorize(Settings.this,PERMISSIONS,-1,new FbLoginDialogListener());
+											
+										} else {
+
+											Toast.makeText(
+													Settings.this,
+													"Please check internet connection !!!",
+													Toast.LENGTH_SHORT).show();
+										}
+
 									}
 
 								} else {
 
 									if (buttonView.getTag().equals("Enable")) {
 
-										Log.print("Setting | holder ","Enable " + isChecked);
+										Log.print("Setting | holder ",
+												"Enable " + isChecked);
 										new StopAllService().execute();
-											
+
 									}
 
 									if (buttonView.getTag().equals("Password")) {
 
-										Pref.setValue("PASSWORD_PROTECTION","0");
+										Pref.setValue("PASSWORD_PROTECTION",
+												"0");
 									}
-									
-									
+
 									if (buttonView.getTag().equals(
 											"Email support")) {
-										
-										mProgress.show();
-										new Thread(new Runnable() {
-											
-											public void run() {
-												
-												int what = -1;
-												stopService(Const.SERVICE_EMAIL);
-												mHandlerSave.sendMessage(mHandlerSave.obtainMessage(what));
-												
-											}
-										}).start();
-									
+										Pref.setValue("EMAIL_SESSION_VALID",
+												"No");
 									}
-									
-									if (buttonView.getTag().equals("MMS support")) {
-										
-										
-										mProgress.show();
-										new Thread(new Runnable() {
-											
-											public void run() {
-												
-												int what = -2;
-												stopService(Const.SERVICE_MMS);
-												mHandlerSave.sendMessage(mHandlerSave.obtainMessage(what));
-												
-											}
-										}).start();
-									
+
+									if (buttonView.getTag().equals(
+											"MMS support")) {
+										Pref.setValue("MMS_SESSION_VALID", "No");
 									}
-									
-									
+
 									if (buttonView.getTag().equals(
 											"Facebook support")) {
-
 										if (Pref.getValue("FB_SESSION_VALID",
 												"No").equals("Yes"))
 											fbLogout();
@@ -386,106 +421,85 @@ public class Settings extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 
-		System.out.println(" [ requestCode ] " + requestCode + " [ resultCode ]"+ resultCode);
-		
+		System.out.println(" [ requestCode ] " + requestCode
+				+ " [ resultCode ]" + resultCode);
+
 		if (requestCode == Const.DIALOG_PASSWORD) {
 
 			if (resultCode == RESULT_OK) {
-
+				
+				
 				Pref.setValue("PASSWORD", data.getStringExtra("Password"));
 				Pref.setValue("PASSWORD_PROTECTION", "1");
+				if (tempCheckbox != null) {
+					tempCheckbox.setTag("-1");
+					tempCheckbox.setChecked(true);
+
+
+				}
+			}else if(resultCode == RESULT_CANCELED){
+				
+				
+				if (tempCheckbox != null) {
+					tempCheckbox.setChecked(false);
+
+				}
 			}
 		}
 
 		if (requestCode == Const.DIALOG_EMAIL_SUPPORT) {
 
 			if (resultCode == RESULT_OK) {
-				
+
 				System.out.println("[ RESUALT  : DIALOG_EMAIL_SUPPORT ");
-				mProgress.setMessage("Please wait ....");
-				mProgress.show();
-				
-				//TODO : SET EMAIL_TIMESTAMP
-				Pref.setValue("EMAIL_TIMESTAMP",String.valueOf(Utils.getMilisecond()));
+
+				// TODO : SET EMAIL_TIMESTAMP
+				Pref.setValue("EMAIL_TIMESTAMP",
+						String.valueOf(Utils.getMilisecond()));
 				Pref.setValue("EMAIL_SESSION_VALID", "Yes");
-				
-				new Thread(new Runnable() {
+				if (tempCheckbox != null) {
+					tempCheckbox.setTag("-1");
+					tempCheckbox.setChecked(true);
 
-					public void run() {
-
-						int what = 1;
-						if (Pref.getValue("STOP_START_SERVICE", "True").equals("True"))
-						{
-							// Need to start service
-							what = 0;
-							stopService(Const.SERVICE_EMAIL);
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-							startService(Const.SERVICE_EMAIL);
-						}
-						mHandlerSave.sendMessage(mHandlerSave.obtainMessage(what));
-					}
-				}).start();
-
-			
-			}else if(resultCode == RESULT_CANCELED){
-				
-				System.out.println("[ CANCEL RESUALT  DIALOG_EMAIL_SUPPORT ");
-				if(tempCheckbox != null){
-					tempCheckbox.setChecked(false);
-					
 				}
-				
+
+			} else if (resultCode == RESULT_CANCELED) {
+
+				System.out.println("[ CANCEL RESUALT  DIALOG_EMAIL_SUPPORT ");
+				if (tempCheckbox != null) {
+					tempCheckbox.setChecked(false);
+
+				}
+
 			}
-			
+
 		}
 
 		if (requestCode == Const.DIALOG_MMS_SUPPORT) {
 
 			if (resultCode == RESULT_OK) {
-				
+
 				System.out.println("[ RESUALT  : DIALOG_MMS_SUPPORT ");
-				//TODO : SET MMS_TIMESTAMP
-				Pref.setValue("MMS_TIMESTAMP",String.valueOf(Utils.getMilisecond()));
-				Pref.setValue("MMS_SESSION_VALID","Yes");
-				
-				new Thread(new Runnable() {
+				// TODO : SET MMS_TIMESTAMP
+				Pref.setValue("MMS_TIMESTAMP",
+						String.valueOf(Utils.getMilisecond()));
+				Pref.setValue("MMS_SESSION_VALID", "Yes");
+				if (tempCheckbox != null) {
+					tempCheckbox.setTag("-1");
+					tempCheckbox.setChecked(true);
 
-					public void run() {
+				}
 
-						int what = 1;
-						if (Pref.getValue("STOP_START_SERVICE", "True").equals("True"))
-						{
-							// Need to start service
-							what = 0;
-							stopService(Const.SERVICE_MMS);
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-							startService(Const.SERVICE_MMS);
-						}
-						mHandlerSave.sendMessage(mHandlerSave.obtainMessage(what));
-					}
-				}).start();
+			} else if (resultCode == RESULT_CANCELED) {
 
-					
-					
-			}else if(resultCode == RESULT_CANCELED){
-				
 				System.out.println("[ CANCEL RESUALT  DIALOG_MMS_SUPPORT ");
-				if(tempCheckbox != null){
+				if (tempCheckbox != null) {
 					tempCheckbox.setChecked(false);
 				}
-				
+
 			}
 		}
-		
-		
+
 	}
 
 	@Override
@@ -501,12 +515,11 @@ public class Settings extends Activity {
 		public void onComplete(Bundle values) {
 
 			SessionStore.save(mFacebook, Settings.this);
-			
+
 			// TODO : FACEBOOK_TIMESTMP
-			Pref.setValue("FACEBOOK_TIMESTMP",String.valueOf(Utils.getMilisecond()));
+			Pref.setValue("FACEBOOK_TIMESTMP",
+					String.valueOf(Utils.getMilisecond()));
 			Pref.setValue("FB_SESSION_VALID", "Yes");
-			startService(Const.SERVICE_FB);
-			
 		}
 
 		public void onFacebookError(FacebookError error) {
@@ -526,7 +539,7 @@ public class Settings extends Activity {
 		}
 
 		public void onCancel() {
-			
+
 			tempCheckbox.setChecked(false);
 			Toast.makeText(Settings.this, "Facebook connection cancel",
 					Toast.LENGTH_SHORT).show();
@@ -538,25 +551,34 @@ public class Settings extends Activity {
 
 		mProgress.setMessage("Disconnecting from Facebook");
 		mProgress.show();
+		if (Utils.isOnline()) {
 
-		new Thread() {
-			@Override
-			public void run() {
-				SessionStore.clear(Settings.this);
+			new Thread() {
+				@Override
+				public void run() {
+					SessionStore.clear(Settings.this);
 
-				int what = 1;
+					int what = 1;
 
-				try {
-					mFacebook.logout(Settings.this);
+					try {
+						mFacebook.logout(Settings.this);
 
-					what = 0;
-				} catch (Exception ex) {
-					ex.printStackTrace();
+						what = 0;
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+
+					mHandler.sendMessage(mHandler.obtainMessage(what));
 				}
+			}.start();
 
-				mHandler.sendMessage(mHandler.obtainMessage(what));
-			}
-		}.start();
+		} else {
+
+			Toast.makeText(Settings.this,
+					"Please check internet connection !!!", Toast.LENGTH_SHORT)
+					.show();
+		}
+
 	}
 
 	private Handler mHandler = new Handler() {
@@ -572,7 +594,6 @@ public class Settings extends Activity {
 
 				// TODO : Disconnect from facebook
 				Pref.setValue("FB_SESSION_VALID", "No");
-				stopService(Const.SERVICE_FB);
 				Toast.makeText(Settings.this, "Disconnected from Facebook",
 						Toast.LENGTH_SHORT).show();
 
@@ -581,407 +602,87 @@ public class Settings extends Activity {
 		}
 	};
 
-	/**
-	 * 
-	 * @param service
-	 *            is name of service
-	 * @param Mode
-	 * 
-	 */
-
-	public void startService(String service) {
-
-		if (service.equals(Const.SERVICE_EMAIL)) {
-
-			if (Const.Email_objPendingIntent == null) {
-
-				Intent intent = new Intent(Const.CONTEXT, EmailReceiver.class);
-				Const.Email_objPendingIntent = PendingIntent.getBroadcast(Const.CONTEXT, 0, intent,
-						PendingIntent.FLAG_CANCEL_CURRENT);
-
-				Const.objAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-				Const.objAlarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-						System.currentTimeMillis() + 5000, Const.INTERVAL_TIME,
-						Const.Email_objPendingIntent);
-
-				Log.print("Setting " + service, ""
-						+ Const.Email_objPendingIntent);
-				Log.print("Setting | startService | " + service, "***** START "
-						+ service + " ALARM MANAGER *******");
-
-			}
-
-		}
-
-		if (service.equals(Const.SERVICE_MMS)) {
-
-			if (Const.MMS_objPendingIntent == null) {
-
-				
-				Intent intent = new Intent(Const.CONTEXT, MMSReceiver.class);
-
-				Const.MMS_objPendingIntent = PendingIntent.getBroadcast(
-						Const.CONTEXT, 0, intent,
-						PendingIntent.FLAG_CANCEL_CURRENT);
-				
-				Const.objAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-				Const.objAlarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-						System.currentTimeMillis()+ 5000, Const.INTERVAL_TIME,
-						Const.MMS_objPendingIntent);
-
-				Log.print("Setting " + service,""+ Const.MMS_objPendingIntent);
-				Log.print("Setting |startService | " + service,"***** START "+ service+ " ALARM MANAGER *******");
-			}
-
-		}
-
-		if (service.equals(Const.SERVICE_FB)) {
-
-			if (Const.FB_objPendingIntent == null) {
-				
-				Intent intent = new Intent(Const.CONTEXT,
-						FacebookReceiver.class);
-
-				Const.FB_objPendingIntent = PendingIntent.getBroadcast(Const.CONTEXT, 0, intent,
-						PendingIntent.FLAG_CANCEL_CURRENT);
-				
-				Const.objAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-				Const.objAlarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-						System.currentTimeMillis()+ 5000, Const.INTERVAL_TIME,
-						Const.FB_objPendingIntent);
-				
-				Log.print("Setting " + service,""+ Const.FB_objPendingIntent);
-				Log.print("Setting | startService | " + service,"***** START "+ service+ " ALARM MANAGER *******");
-				
-				
-			}
-
-		}
-
-	}
-
-	public void stopService(String service) {
-
-		if (service.equals(Const.SERVICE_EMAIL)) {
-			
-			Log.print("Setting | stopService " + service,""+ Const.Email_objPendingIntent);
-			
-			if (Const.Email_objPendingIntent != null) {
-				
-			
-				Const.objAlarmManager.cancel(Const.Email_objPendingIntent);
-				Const.Email_objPendingIntent.cancel();
-				
-				Const.Email_objPendingIntent = null;
-
-				Log.print("Setting | stopService |" + service,"***** STOP "+ service + "ALARM MANAGER *******");
-
-			}
-		}
-
-		if (service.equals(Const.SERVICE_MMS)) {
-
-			Log.print("Setting | stopService " + service,""+ Const.MMS_objPendingIntent);
-			
-			if (Const.MMS_objPendingIntent != null) {
-				
-				Const.objAlarmManager.cancel(Const.MMS_objPendingIntent);
-				Const.MMS_objPendingIntent.cancel();
-
-				Const.MMS_objPendingIntent = null;
-				
-				Log.print("Setting |stopService | " + service,"***** STOP  "+ service + " ALARM MANAGER *******");
-			}
-		}
-
-		if (service.equals(Const.SERVICE_FB)) {
-			
-			Log.print("Setting | stopService " + service,""+ Const.FB_objPendingIntent);
-			
-			if (Const.FB_objPendingIntent != null) {
-				
-				Const.objAlarmManager.cancel(Const.FB_objPendingIntent);
-				Const.FB_objPendingIntent.cancel();
-				
-				Const.FB_objPendingIntent = null;
-				
-				
-				Log.print("Setting |stopService | " + service,"***** STOP  "+ service + " ALARM MANAGER *******");
-
-			}
-		}
-
-	}
-
-	private Handler mHandlerSave = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			
+	public void startService() {
 		
-			mProgress.dismiss();
-			if (msg.what == 1) {
-
-				Toast.makeText(Settings.this,
-						"Please Enable To start notification !!!",
-						Toast.LENGTH_SHORT).show();
-
-			} else if(msg.what == 0){
-				Toast.makeText(Settings.this, "Notification start..",
-				Toast.LENGTH_SHORT).show();
-
-			}else if(msg.what == -1){
-				Toast.makeText(Settings.this, "Email notification stop..",
-						Toast.LENGTH_SHORT).show();
-				
-				Pref.setValue("EMAIL_SESSION_VALID","No");
-				
-			}else if(msg.what == -2){
-				Toast.makeText(Settings.this, "MMS notification stop..",
-						Toast.LENGTH_SHORT).show();
-				Pref.setValue("MMS_SESSION_VALID","No");
-			}
-			
-		}
-	};
-
 	
-	class StartAllService extends AsyncTask<Void,Void,Integer>{
+		Log.print("Setting |=> stratService");
+		Intent intent = new Intent(Const.CONTEXT, SharePicture.class);
+
+		Const.objPendingIntent = PendingIntent.getBroadcast(Const.CONTEXT, 0,
+				intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+		Const.objAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		Const.objAlarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+				System.currentTimeMillis() + 5000, Const.INTERVAL_TIME,
+				Const.objPendingIntent);
+	
+
+	}
+
+	public void stopService() {
+		
+		
+		if (Const.objPendingIntent != null) {
+			Log.print("Setting |=> stopService");
+			Const.objAlarmManager.cancel(Const.objPendingIntent);
+			Const.objPendingIntent.cancel();
+			Const.objPendingIntent = null;
+			SharePicture.STARTED = false;
+		}
+
+	}
+
+	class StartAllService extends AsyncTask<Void, Void, Integer> {
 
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
 			mProgressDialog.show();
 		}
-		
+
 		@Override
 		protected Integer doInBackground(Void... params) {
-			
+
 			int Result = 0;
-			
-			startService(Const.SERVICE_EMAIL);
-			startService(Const.SERVICE_MMS);
-			startService(Const.SERVICE_FB);
+			startService();
 			return Result;
 		}
-		
+
 		@Override
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
 			mProgressDialog.dismiss();
-			if(result == 0){
-				Pref.setValue("STOP_START_SERVICE", "True");
+			if (result == 0) {
+				Pref.setValue("STOP_START_SERVICE", "Yes");
+				
 			}
 		}
 	}
-	
-	class StopAllService extends AsyncTask<Void,Void, Integer>{
+
+	class StopAllService extends AsyncTask<Void, Void, Integer> {
 
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
 			mProgressDialog.show();
 		}
+
 		@Override
 		protected Integer doInBackground(Void... params) {
 			int Result = 0;
-			 
-			// Email Service Stop
-			stopService(Const.SERVICE_EMAIL);
-			// MMS Serice stop
-			stopService(Const.SERVICE_MMS);
-			// Facebook Service
-			stopService(Const.SERVICE_FB);
-			
+			stopService();
 			return Result;
 		}
-		
+
 		@Override
 		protected void onPostExecute(Integer result) {
 			super.onPostExecute(result);
 			mProgressDialog.dismiss();
-			if(result == 0){
-				Pref.setValue("STOP_START_SERVICE", "False");
+			if (result == 0) {
+				Pref.setValue("STOP_START_SERVICE", "No");
 			}
 		}
-		
+
 	}
-	
-	
-	
-	/*
-	 * 
-	 * 	private static final int LOADING = 0;
-
-	private static final int STOP_SERVICE_EMAIL = 1;
-	private static final int STOP_SERVICE_MMS = 2;
-	private static final int STOP_SERVICE_FB = 3;
-
-	private static final int START_SERVICE_EMAIL = -1;
-	private static final int START_SERVICE_MMS = -2;
-	private static final int START_SERVICE_FB = -3;
-
-	private static final int STOP_SERVICE_COMPLETE = 4;
-	private static final int START_SERVICE_COMPLETE = 5;
-
-	private static final int SERVICE_ERROR = 6;
-
-	private static int intCode;
-	 * 
-	 * 
-	 * 
-	 * 
-	 * private Handler ServiceHandler = new Handler() {
-
-		@Override
-		public void handleMessage(Message msg) {
-
-			Log.print("Setting | handleMessage ", "" + msg.what);
-			switch (msg.what) {
-
-	
-			case LOADING:
-				break;
-
-			case START_SERVICE_EMAIL:
-				break;
-
-			case START_SERVICE_MMS:
-				break;
-			case START_SERVICE_FB:
-				break;
-
-			case STOP_SERVICE_EMAIL:
-				break;
-			case STOP_SERVICE_MMS:
-				break;
-			case STOP_SERVICE_FB:
-				break;
-
-			case START_SERVICE_COMPLETE:
-				mProgressDialog.dismiss();
-				Toast.makeText(Const.CONTEXT,
-						"Notification service started !!!", Toast.LENGTH_SHORT)
-						.show();
-				Pref.setValue("STOP_START_SERVICE", "True");
-				break;
-
-			case STOP_SERVICE_COMPLETE:
-				mProgressDialog.dismiss();
-				Toast.makeText(Const.CONTEXT,
-						"Notification service stoped !!!", Toast.LENGTH_SHORT)
-						.show();
-				Pref.setValue("STOP_START_SERVICE", "False");
-				break;
-
-			case SERVICE_ERROR:
-				if (intCode == 1) {
-					Toast.makeText(Const.CONTEXT,
-							"Please set email notification !!!",
-							Toast.LENGTH_SHORT).show();
-				} else if (intCode == 2) {
-					Toast.makeText(Const.CONTEXT,
-							"Please set mms notification !!!",
-							Toast.LENGTH_SHORT).show();
-				} else if (intCode == 3) {
-					Toast.makeText(Const.CONTEXT,
-							"Please set Facebook notification !!!",
-							Toast.LENGTH_SHORT).show();
-				}
-				break;
-
-			}
-		}
-
-	};
-	
-	*/
-	
-	
-	/*private Thread mStopAllService = new Thread(new Runnable() {
-
-		public void run() {
-
-		
-
-				// start Progress
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(LOADING));
-
-				// Email Service Stop
-				stopService(Const.SERVICE_EMAIL);
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(STOP_SERVICE_EMAIL));
-
-
-				// MMS Serice stop
-				stopService(Const.SERVICE_MMS);
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(STOP_SERVICE_MMS));
-				
-
-				
-
-
-				// Facebook Service
-				stopService(Const.SERVICE_FB);
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(STOP_SERVICE_FB));
-
-
-				
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(STOP_SERVICE_COMPLETE));
-
-				
-
-		}
-	});
-
-	private Thread mStartAllService = new Thread(new Runnable() {
-
-		public void run() {
-
-			
-
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(LOADING));
-
-				startService(Const.SERVICE_EMAIL);
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(START_SERVICE_EMAIL));
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-
-				
-				startService(Const.SERVICE_MMS);
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(START_SERVICE_MMS));
-
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-
-				startService(Const.SERVICE_FB);
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(START_SERVICE_FB));
-
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-
-				ServiceHandler.sendMessage(ServiceHandler
-						.obtainMessage(START_SERVICE_COMPLETE));
-	
-
-		}
-	});
-*/
 
 }

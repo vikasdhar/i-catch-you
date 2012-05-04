@@ -15,6 +15,7 @@ public class Const {
 	public static String LOG_DIR = APP_HOME + "/log";
 	public static String IMAGE_DIR = APP_HOME + "/images";
 	public static String CATCH_IMAGE_DIR = APP_HOME + "/catch";
+	public static String TEMP_IMAGE_DIR = APP_HOME + "/temp";
 	public static String THUMBNAIL_DIR = APP_HOME + "/thumbnails";
 	public static String TEMP_IMAGE_PATH = APP_HOME + "/temp.png";
 	
@@ -30,6 +31,8 @@ public class Const {
 	public static final int DIALOG_EMAIL_SUPPORT = 2;
 	public static final int DIALOG_MMS_SUPPORT = 3;
 	public static final int DIALOG_FACEBOOK_SUPPORT = 4;
+	public static final int DIALOG_ADVANCE_SETTINGS = 5;
+	
 	
 	public static final int DIALOG_WEEKDAYS = 5;
 	
@@ -43,16 +46,9 @@ public class Const {
 	public static final String FACEBOOK_APP_ID = "137918546333299"; 
 	
 	
-	//Alarm Manager
-	public static String SERVICE_EMAIL = "Email";
-	public static String SERVICE_MMS = "MMS";
-	public static String SERVICE_FB = "Facebook";
-	
-	
 	public static AlarmManager objAlarmManager = null;
-	public static PendingIntent  Email_objPendingIntent = null;
-	public static PendingIntent  MMS_objPendingIntent = null;
-	public static PendingIntent  FB_objPendingIntent = null;
+	public static PendingIntent objPendingIntent = null;
+	
 	
 	
 	public static boolean IS_STRATUP = true;
@@ -61,6 +57,6 @@ public class Const {
 	 * 1 Min = 60000 Milisecond
 	 * 
 	 */
-	public static long INTERVAL_TIME = (60000 * 1);
+	public static long INTERVAL_TIME = (60000 * 5);
 	
 }

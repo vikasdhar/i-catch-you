@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Display;
@@ -16,7 +18,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
@@ -32,7 +33,7 @@ import com.esp.spycatch.util.Log;
 import com.esp.spycatch.util.Storage;
 import com.esp.spycatch.util.Utils;
 
-public class PhotoGallery extends Activity implements OnClickListener{
+public class PhotoGallery extends Activity {
 	
 	//public ImageList imageList;
 	public LinearLayout imageList;
@@ -40,14 +41,16 @@ public class PhotoGallery extends Activity implements OnClickListener{
 	public static boolean doGenerateUI = true;
 	
 	public int intPageNo;
-	public int NumberOfIteam = 50;
+	public int NumberOfIteam;
 	
 	public static ArrayList<ImageBean> arrListImageBean = null;
 	
-	private Button btn_Pre,btn_next;
+	public ArrayList<ImageBean> tempArrayList = null;
 	
+	public ProgressDialog mProgressDialog;
 	
-    /** Called when the activity is first created. */
+	private Display display = null;
+	private int cols = 0; 
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,28 +62,153 @@ public class PhotoGallery extends Activity implements OnClickListener{
         this.pageTitle = (PageTitle)findViewById(R.id.pageTitle);
         this.pageTitle.init();
         this.pageTitle.txtPageTitle.setText("Gallery");
+
         
         this.imageList = (LinearLayout)findViewById(R.id.imageList);        
+       
+        mProgressDialog = new ProgressDialog(PhotoGallery.this);
+        mProgressDialog.setMessage("Please wait....");
+		mProgressDialog.setIndeterminate(true);
+		mProgressDialog.setCancelable(false);
         
-        
-        btn_Pre = (Button)findViewById(R.id.btn_prv);
-        btn_next = (Button)findViewById(R.id.btn_next);
-        btn_Pre.setOnClickListener(this);
-        btn_next.setOnClickListener(this);
-        
-    	Const.CONTEXT = this;
-    	intPageNo = Integer.parseInt(getIntent().getExtras().getString("PAGENO"));
-    	Log.print("","[ PAGE WATCH ] " + intPageNo);
-    	this.generateUI();
+    
     }
     
     @Override
 	protected void onResume() {
 		super.onResume();
 		
+		Const.CONTEXT = this;
+    	intPageNo = Integer.parseInt(getIntent().getExtras().getString("PAGENO"));
+    	Log.print("","[ PAGE WATCH ] " + intPageNo);
+    	
+    	// TODO Remove all view
+    	this.imageList.removeAllViews();
+    	
+    	//TODO Get Number of Column
+    	display = ((WindowManager)Const.CONTEXT.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+		//TODO number of images horizontally
+		cols = (display.getWidth()-10)/110;
+		NumberOfIteam = cols * 3;
+		Log.print("Cols : ", cols+ " ,Item PerPage " + NumberOfIteam);
+		
+    	
+    	
+    	// TODO If arrayList Not Null Then clear
+    	
+    	if (arrListImageBean != null) {
+			if(!arrListImageBean.isEmpty()){
+				arrListImageBean.clear();
+				arrListImageBean = null;
+			}else{
+				arrListImageBean = null;
+			}
+		}
+		
+		// Get image
+		ImageBL mImageBL = new ImageBL();
+		
+		if(arrListImageBean == null){
+			arrListImageBean = mImageBL.Page_List(intPageNo,NumberOfIteam);
+			Log.print("ARRAYLIST : ", arrListImageBean.size()+ "");
+		}
+		
+		//TODO First Time Pass Main ArrayList
+		
+    	this.generateUI(arrListImageBean);
+    	
+    	final View Moreview = LayoutInflater.from(Const.CONTEXT).inflate(R.layout.list_image_footer,null,true);
+    	Moreview.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				//TODO Next Page No 
+				AsyncTask<Void, Void, Integer> TaskMore = new AsyncTask<Void, Void, Integer>(){
+					
+					@Override
+					protected void onPreExecute() {
+						super.onPreExecute();
+						mProgressDialog.show();
+						
+					}
+					@Override
+					protected Integer doInBackground(Void... params) {
+						int Result = 0;
+						
+						intPageNo ++;
+						ImageBL mImageBL = new ImageBL();
+						
+						// TODO Add To TempArrayList
+						tempArrayList = mImageBL.Page_List(intPageNo,NumberOfIteam);
+						Log.print("Temp Array ", "Size" + tempArrayList.size());
+						if (tempArrayList != null && tempArrayList.size() > 0)
+						{
+							for(ImageBean mBean : tempArrayList){
+								Log.print("TEMP ITEM", mBean.getFileName());
+								//TODO Add Item on Main ArrayList
+								arrListImageBean.add(mBean);
+							}
+							runOnUiThread(new Runnable() {
+								
+								public void run() {
+									
+									//TODO Remove View If Visible
+									imageList.removeView(Moreview);
+									generateUI(tempArrayList);
+								}
+							});
+						}
+						else
+						{
+							
+							Result = -1;
+						}
+						
+						
+						return Result;
+					}
+					@Override
+					protected void onPostExecute(Integer result) {
+						super.onPostExecute(result);
+						mProgressDialog.dismiss();
+						Log.print("More Image", "Result" + result);
+						if(result == 0){
+							
+							// TODO To add More View at End
+							ImageBL mImageBL = new ImageBL();
+							if(mImageBL.GetNofImages()> arrListImageBean.size())
+							{
+								Log.print("Main Array ", "Size " + arrListImageBean.size());
+								imageList.addView(Moreview);
+							}
+							
+						}
+						else if(result == -1){
+							imageList.removeView(Moreview);
+						}
+					}
+				};
+				
+				TaskMore.execute();
+			}
+		});
+    	
+    	if(mImageBL.GetNofImages()> arrListImageBean.size())
+    	this.imageList.addView(Moreview);
+    	
+    	
 	}
+
+    @Override
+    protected void onPause() {
+    	super.onPause();
+    }
     
-	public void generateUI(){
+    @Override
+    protected void onDestroy() {
+    	super.onDestroy();
+    }
+	
+    public void generateUI(ArrayList<ImageBean> objArryList){
     	View view = null;
     	LinearLayout linearLayout = null;
     	LayoutParams lparams = null;
@@ -96,65 +224,16 @@ public class PhotoGallery extends Activity implements OnClickListener{
     	
     	if (PhotoGallery.doGenerateUI){
     		
-    		//get width of the screen
+    		//TODO get width of the screen
     		display = ((WindowManager)Const.CONTEXT.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
     		
-    		//number of images horizontally
-    		cols = (display.getWidth()-10)/65;
+    		//TODO number of images horizontally
+    		cols = (display.getWidth()-10)/110;
     		
     		Log.print("Cols : ", cols+ "");
     		
-			if (arrListImageBean != null) {
-    			if(!arrListImageBean.isEmpty()){
-    				arrListImageBean.clear();
-    				arrListImageBean = null;
-    			}else{
-    				
-    				arrListImageBean = null;
-    			}
-    		}
     		
-    		// Get 50 image
-    		ImageBL mImageBL = new ImageBL();
-    		
-    		if(arrListImageBean == null){
-    			arrListImageBean = mImageBL.Page_List(intPageNo);
-    			Log.print("ARRAYLIST : ", arrListImageBean.size()+ "");
-    		}
-    		
-    		
-    		if (arrListImageBean.size() == NumberOfIteam && intPageNo > 1) {
-				// Next Button Visible
-    			btn_next.setVisibility(View.VISIBLE);
-    			btn_next.setBackgroundResource(R.drawable.btn_next_selector);
-				
-				btn_Pre.setVisibility(View.VISIBLE);
-				btn_Pre.setBackgroundResource(R.drawable.btn_prv_selector);
-				
-			} else if (arrListImageBean.size() < NumberOfIteam && intPageNo > 1) {
-//				btn_next.setVisibility(View.GONE);
-				btn_next.setBackgroundResource(R.drawable.btn_next_disabled);
-				btn_next.setEnabled(true);
-				btn_Pre.setVisibility(View.VISIBLE);
-			} else if (arrListImageBean.size() == NumberOfIteam
-					&& intPageNo == 1) {
-				btn_next.setVisibility(View.VISIBLE);
-//				btn_Pre.setVisibility(View.GONE);
-				btn_Pre.setBackgroundResource(R.drawable.btn_prv_disabled);
-				btn_Pre.setEnabled(true);
-				
-			}else if(arrListImageBean.size() != NumberOfIteam && intPageNo == 1){
-				
-				btn_next.setBackgroundResource(R.drawable.btn_next_disabled);
-				btn_next.setEnabled(true);
-				btn_Pre.setBackgroundResource(R.drawable.btn_prv_disabled);
-				btn_Pre.setEnabled(true);
-				
-			}
-    		
-			
-    		//Utils.arrListToArray(arrListImageBean);
-    		files = Utils.arrListToArray(arrListImageBean);
+    		files = Utils.arrListToArray(objArryList);
     		
 //    		imageDir = new File(Const.THUMBNAIL_DIR);
 //    		files = imageDir.list();
@@ -163,7 +242,7 @@ public class PhotoGallery extends Activity implements OnClickListener{
     		if (files.length != 0){
     			lparams = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
     			
-    			//Create new linear layout
+    			//TODO Create new linear layout
     			linearLayout = new LinearLayout(Const.CONTEXT);
     			linearLayout.setLayoutParams(lparams);
     			linearLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -186,11 +265,13 @@ public class PhotoGallery extends Activity implements OnClickListener{
 							v.setTag("0");
 							return;
 						}
-						Toast.makeText(PhotoGallery.this,arrListImageBean.get(index).getFileName(),Toast.LENGTH_SHORT).show();
+						//Toast.makeText(PhotoGallery.this,arrListImageBean.get(index).getFileName(),//Toast.LENGTH_SHORT).show();
 						Intent viewIntent = new Intent(PhotoGallery.this,PhotoViewerActivity.class);
 						viewIntent.putExtra("FileName",arrListImageBean.get(index).getFileName());
 						viewIntent.putExtra("Index",index+"");
-						viewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+						viewIntent.putExtra("Lat",arrListImageBean.get(index).getLat());
+						viewIntent.putExtra("Long",arrListImageBean.get(index).getLon());
+						//viewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 						startActivityForResult(viewIntent,100);
 						
 					}
@@ -229,7 +310,7 @@ public class PhotoGallery extends Activity implements OnClickListener{
     			
     			image = (ImageView)view.findViewById(R.id.image);
     			image.setLayoutParams(lparams);
-    			//image.setImageBitmap(Utils.decodeFile(Const.THUMBNAIL_DIR + "/"+ files[i],75,75));
+    			
     			new LoadImage(files[i], image);
     			
     			imagePath = (TextView)view.findViewById(R.id.imagePath);
@@ -272,64 +353,24 @@ public class PhotoGallery extends Activity implements OnClickListener{
     	files = null;
     }
     
-    private class LoadImage extends Thread {
-    	private ImageView image;
-    	private String imageName;
-		public LoadImage(String imageName, ImageView image){
-			this.imageName = imageName;
-			this.image = image;
-			this.start();
+    private class LoadImage{
+    	
+		public LoadImage(final String imageName, final ImageView image){
+			
+			Log.print("Image Path : ", Const.THUMBNAIL_DIR + "/"+ imageName);
+			runOnUiThread(new Runnable() {
+				public void run() {
+					
+					final Bitmap viewBitmap = Utils.decodeFile(Const.THUMBNAIL_DIR + "/"+ imageName,95,95);
+					if(viewBitmap != null)
+					image.setImageBitmap(viewBitmap);
+					
+					
+				}
+			});
 		}
-		
-		@Override
-		public void run() {
-			try{
-				Log.print("Path : ", Const.THUMBNAIL_DIR + "/"+ imageName);
-				this.image.setImageBitmap(Utils.decodeFile(Const.THUMBNAIL_DIR + "/"+ imageName,50,50));							
-			}catch(Exception e){
-				e.printStackTrace();
-				Log.print("Exception Path : ", Const.THUMBNAIL_DIR + "/"+ imageName);
-			}
-		}
-    }
-
-	public void onClick(View v) {
-		
-		switch (v.getId()) {
-		case R.id.btn_prv:
-			
-			
-			if(intPageNo > 1){
-				intPageNo--;
-				Intent mItent = new Intent(PhotoGallery.this,PhotoGallery.class);
-				mItent.putExtra("PAGENO",String.valueOf(intPageNo));
-				mItent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-				Toast.makeText(PhotoGallery.this,String.valueOf(intPageNo),Toast.LENGTH_SHORT).show();
-				startActivity(mItent);
-				finish();
-				
-			}
-			break;
-
-		case R.id.btn_next:
-			
-			if(arrListImageBean.size() == NumberOfIteam){
-				intPageNo++;
-				Intent mItent = new Intent(PhotoGallery.this,PhotoGallery.class);
-				mItent.putExtra("PAGENO",String.valueOf(intPageNo));
-				mItent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-				Toast.makeText(PhotoGallery.this,String.valueOf(intPageNo),Toast.LENGTH_SHORT).show();
-				startActivity(mItent);
-				finish();
-			}
-			
-			break;
-
-		default:
-			break;
-		};
 	}
-	
+
 	
 	class RemoveView extends AsyncTask<Void,Void,Integer>{
 
@@ -367,7 +408,7 @@ public class PhotoGallery extends Activity implements OnClickListener{
 				Intent mItent = new Intent(PhotoGallery.this,PhotoGallery.class);
 	        	mItent.putExtra("PAGENO",String.valueOf(intPageNo));
 	        	mItent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-	        	Toast.makeText(PhotoGallery.this,String.valueOf(intPageNo),Toast.LENGTH_SHORT).show();
+	        	//Toast.makeText(PhotoGallery.this,String.valueOf(intPageNo),//Toast.LENGTH_SHORT).show();
 	        	startActivity(mItent);
 	        	finish();
 			}else{

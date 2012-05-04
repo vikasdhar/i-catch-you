@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/bg_page" 
     >
 	<com.esp.spycatch.uc.PageTitle
 		android:id="@+id/pageTitle"
@@ -17,36 +16,12 @@
 		android:layout_height="50dp" 
 		android:layout_alignParentBottom="true"
 		/>	 
-	<RelativeLayout
-		android:id="@+id/pageNavigation"
-		android:layout_above="@+id/footer_gallery"
-		android:layout_width="fill_parent"
-       	android:layout_height="wrap_content"
-       	>
-       	<Button
-       		android:id="@+id/btn_prv"
-       		android:layout_width="wrap_content"
-       	 	android:layout_height="wrap_content"
-       	 	android:layout_alignParentLeft="true"
-       	 	android:layout_marginLeft="10dp"
-       	 	android:background="@drawable/btn_prv_selector"
-       	 	/>
-  		<Button
-  			android:id="@+id/btn_next"
-	   		android:layout_width="wrap_content"
-	   	 	android:layout_height="wrap_content"
-	   	 	android:layout_alignParentRight="true"
-	   	 	android:layout_marginRight="10dp"
-	   	 	android:background="@drawable/btn_next_selector"
-	   	 	/>	
-	</RelativeLayout>
-		  
 	<ScrollView 
 		android:id="@+id/Container_View"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_below="@+id/pageTitle"
-        android:layout_above="@+id/pageNavigation"
+        android:layout_above="@+id/footer_gallery"
         android:layout_margin="5dp" 
         android:scrollbars="none"
         >
@@ -56,7 +31,9 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical"
 	 		>
+ 		 	
         </LinearLayout>
+       
     </ScrollView>
     
 </RelativeLayout>

@@ -47,9 +47,10 @@ import android.os.Bundle;
 public class AsyncFacebookRunner {
 
     Facebook fb;
-
+    
     public AsyncFacebookRunner(Facebook fb) {
         this.fb = fb;
+       
     }
 
     /**

@@ -25,30 +25,30 @@ public class ImageBL {
 			{
 				if(Mode == 1)
 					Query.append("SELECT ")
-					 	 .append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate ")
+					 	 .append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate, Lat, Lon ")
 					 	 .append("FROM Image ORDER BY IMAGEID");
 				
 				else if(Mode == 2)
 					Query.append("SELECT ")
-					 	 .append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate ")
+					 	 .append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate, Lat, Lon ")
 					 	 .append("FROM Image ")
-					 	 .append("WHERE DoEmail = 0 AND CreatedDate >= ")
+					 	 .append("WHERE DoEmail = 0 AND CreatedDate <= ")
 					 	 .append(objBean.getCreatedDate())
 					 	 .append(" ORDER BY IMAGEID");
 				
 				else if(Mode == 3)
 					Query.append("SELECT ")
-					 	 .append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate ")
+					 	 .append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate, Lat, Lon ")
 					 	 .append("FROM Image ")
-					 	 .append("WHERE DoMMS = 0 AND CreatedDate >= ")
+					 	 .append("WHERE DoMMS = 0 AND CreatedDate <= ")
 					 	 .append(objBean.getCreatedDate())
 					 	 .append(" ORDER BY IMAGEID");
 				
 				else if(Mode == 4)
 					Query.append("SELECT ")
-					 	 .append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate ")
+					 	 .append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate, Lat, Lon ")
 					 	 .append("FROM Image ")
-					 	 .append("WHERE DoFacebook = 0 AND CreatedDate >= ")
+					 	 .append("WHERE DoFacebook = 0 AND CreatedDate <= ")
 					 	 .append(objBean.getCreatedDate())
 					 	 .append(" ORDER BY IMAGEID");
 				
@@ -70,6 +70,8 @@ public class ImageBL {
 				objImageList.setDoEmail(objCursor.getInt(3));
 				objImageList.setDoMMS(objCursor.getInt(4));
 				objImageList.setDoFacebook(objCursor.getInt(5));
+				objImageList.setLat(objCursor.getString(7));
+				objImageList.setLon(objCursor.getString(8));
 				objList.add(objImageList);
 			}
 			
@@ -88,25 +90,25 @@ public class ImageBL {
 		return objList;
 	}
 	
-	public ArrayList<ImageBean> Page_List(int PageNo)
+	public ArrayList<ImageBean> Page_List(int PageNo,int point)
 	{
 		DBHelper objDBHelper = new DBHelper();
 		StringBuilder Query = new StringBuilder();
 		ArrayList<ImageBean> objList = new ArrayList<ImageBean>();
 		Cursor objCursor = null;
 		
-		int start = (PageNo - 1) * 50 + 1;
-		int end = start + 49;
+//		int start = (PageNo - 1) * 50 + 1;
+//		int end = start + 49;
 		
-//		int start = (PageNo - 1) * 3;
-//		int end = 3;
+		int start = (PageNo - 1) * point;
+		int end = point;
 		
 		try {
 
 			if (PageNo != 0) {
 
 				Query.append("SELECT ")
-						.append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate ")
+						.append("ImageID, FileName, Thumbnail, DoEmail, DoMMS, DoFacebook, CreatedDate, Lat, Lon ")
 						.append("FROM Image ")
 						.append("ORDER BY CreatedDate Desc Limit ")
 						.append(start)
@@ -131,6 +133,8 @@ public class ImageBL {
 				objImageList.setDoEmail(objCursor.getInt(3));
 				objImageList.setDoMMS(objCursor.getInt(4));
 				objImageList.setDoFacebook(objCursor.getInt(5));
+				objImageList.setLat(objCursor.getString(7));
+				objImageList.setLon(objCursor.getString(8));
 				objList.add(objImageList);
 			}
 
@@ -156,13 +160,18 @@ public class ImageBL {
 		try {
 			
 			Query.append("INSERT INTO ")
-			 .append("Image ( FileName, Thumbnail, DoEmail, DoMMs, DoFacebook, CreatedDate) ")
+			 .append("Image ( FileName, Thumbnail, DoEmail, DoMMs, DoFacebook, CreatedDate, Lat, Lon) ")
 			 .append("Values ( '")
 			 .append(objBean.fileName)
 			 .append("','")
 			 .append(objBean.fileName)
 			 .append("', 0,0,0,")
 			 .append(System.currentTimeMillis())
+			 .append(",'")
+			 .append(objBean.lat)
+			 .append("','")
+			 .append(objBean.lon)
+			 .append("'")
 			 .append(")");
 			
 			Log.print("ImageBL |-> List " + Query.toString());
@@ -248,5 +257,37 @@ public class ImageBL {
 		
 	}
 	
+	public int GetNofImages(){
+		
+		DBHelper objDBHelper = new DBHelper();	
+		StringBuilder Query = new StringBuilder();
+		Cursor objCursor = null;
+		int TotalImage = 0;
+		try {
+			
+			Query.append("SELECT COUNT(ImageID) FROM Image");
+			
+			Log.print("ImageBL |-> MAX IMAGES " + Query.toString());
+			objCursor = objDBHelper.query(Query.toString());
+			objCursor.moveToPosition(-1);
+			
+			if(objCursor.getCount() > 0)
+			{
+				objCursor.moveToNext();
+				TotalImage = objCursor.getInt(0);
+			}
+			
+		} catch (Exception e) {
+			Log.error("Image counter ", e.getMessage());
+		} finally {
+			objDBHelper = null;
+			Query = null;
+			objCursor.close();
+			objCursor = null;
+		}
+		
+		Log.print("ImageBL |-> Totals IMAGES " + TotalImage);
+		return TotalImage;
+	}
 	
 }
