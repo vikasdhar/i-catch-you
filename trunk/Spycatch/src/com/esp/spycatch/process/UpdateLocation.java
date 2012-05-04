@@ -8,28 +8,33 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
-import android.widget.Toast;
 
+import com.esp.spycatch.ui.LocationAlert;
 import com.esp.spycatch.util.Const;
 import com.esp.spycatch.util.Log;
 import com.esp.spycatch.util.Pref;
 
 public class UpdateLocation extends BroadcastReceiver{
+	
+	public static final String BROADCAST_ACTION = "com.esp.spycatch.process.broadcast.checkgps";
+	
 	public static boolean STARTED=false;
 	public LocationManager mGPSLocationManager=null;
 	public LocationManager mNetLocationManager=null;	
+	public Intent intent;
+	private Context mContext;
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		UpdateLocation.STARTED=true;
+		mContext = context;
 		
 		Log.print("update Location Service is Started");
-		
 		this.start();
 	}
 	
 	public void start(){		
-		this.mGPSLocationManager = (LocationManager) Const.CONTEXT
+		this.mGPSLocationManager = (LocationManager) mContext
 				.getSystemService(Context.LOCATION_SERVICE);
 				
 		LocationListener mGPSLocationListener = new GPSLocationListener();
@@ -37,11 +42,19 @@ public class UpdateLocation extends BroadcastReceiver{
 		if (this.mGPSLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
 			this.mGPSLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 1, mGPSLocationListener);
 		}else{
+			
 			Pref.setValue("IS_LOCATION_AVAILABLE", "0");
-			Toast
-			.makeText(
-					Const.CONTEXT,
-					"GPS system is not available.",Toast.LENGTH_LONG).show();
+			
+			//Toast.makeText(Const.CONTEXT, "GPS system is not available.",Toast.LENGTH_LONG).show();
+			
+			if(Pref.getValue("IS_DIALOG_SHOW","1").equals("1")){
+				intent = new Intent(mContext, LocationAlert.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				mContext.startActivity(intent);
+			}
+			
+			
+	       
 		}
 	}
 	
@@ -78,11 +91,16 @@ public class UpdateLocation extends BroadcastReceiver{
 			
 			if (provider == LocationManager.GPS_PROVIDER) {
 
-				Toast
-						.makeText(
-								Const.CONTEXT,
-								"Wireless networks is disabled.\n\nGo to \"Location and Security Settings\" to enable it.",
-								Toast.LENGTH_LONG).show();
+//				Toast.makeText(Const.CONTEXT,"Wireless networks is disabled.\n\nGo to \"Location and Security Settings\" to enable it.",
+//					Toast.LENGTH_LONG).show();
+//				
+				if(Pref.getValue("IS_DIALOG_SHOW","1").equals("1")){
+					
+					intent = new Intent(mContext, LocationAlert.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					mContext.startActivity(intent);
+				}
+				
 				Log.error(this.getClass()+"", "Wireless networks is disabled.");
 			}
 

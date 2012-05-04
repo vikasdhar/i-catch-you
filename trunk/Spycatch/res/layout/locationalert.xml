@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" 
+	android:layout_height="fill_parent"
+	android:orientation="vertical" 
+	android:padding="4dp" 
+	android:gravity="center_horizontal"
+	>
+	<TextView 
+		android:id="@+id/text" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:gravity="center_vertical|center_horizontal"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:text="@string/app_name" 
+		/>
+	<View
+		android:layout_width="fill_parent" 
+		android:layout_height="2dp"
+	  	android:background="@android:drawable/divider_horizontal_dim_dark"
+	  	android:layout_marginTop="4dp"
+	  	android:layout_marginBottom="4dp"
+		/>	
+	<LinearLayout 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		>
+		<Button 
+			android:id="@+id/btn_Ignore"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_weight="1" 
+			android:text="Ignore" 
+			/>
+		<Button 
+			android:id="@+id/btn_setLocation"
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content"
+			android:layout_weight="1" 
+			android:text="Set Location" 
+			/>
+	</LinearLayout>
+	<LinearLayout
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:gravity="center_vertical|center_horizontal"
+		>
+		<CheckBox
+			android:id="@+id/cbox_showdialog"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:text="Don’t show me again"
+			/>
+	</LinearLayout>
+	
+</LinearLayout>

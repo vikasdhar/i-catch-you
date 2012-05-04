@@ -11,14 +11,13 @@ import android.widget.Toast;
 
 import com.esp.spycatch.R;
 import com.esp.spycatch.uc.PageTitle;
+import com.esp.spycatch.util.Pref;
 
 public class SetPasswordActivity extends Activity implements OnClickListener{
 	
 	public PageTitle pageTitle;
 	
 	private String strTitle;
-	
-	private String strPassword;
 	
 	private EditText editText_Password;
 	
@@ -33,10 +32,6 @@ public class SetPasswordActivity extends Activity implements OnClickListener{
 		// Intent Filter
 		strTitle = getIntent().getStringExtra("Title");
 		
-		if(strTitle.equals("PASSWORD")){
-			strPassword = getIntent().getStringExtra("Password");
-		}
-		
 		  //Page title
         this.pageTitle = (PageTitle)findViewById(R.id.pageTitle);
         this.pageTitle.init();
@@ -50,7 +45,7 @@ public class SetPasswordActivity extends Activity implements OnClickListener{
 		if (strTitle != null && strTitle.equals("Password")
 				&& !strTitle.equals("")) {
 			editText_Password = (EditText)findViewById(R.id.editText_Password);
-			editText_Password.setText(strPassword);
+			editText_Password.setText(Pref.getValue("PASSWORD", null));
 		}
 		
 		btnDone = (Button)findViewById(R.id.btn_Done);

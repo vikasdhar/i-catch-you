@@ -19,6 +19,7 @@
 		android:layout_below="@+id/pageTitle"
 		android:layout_above="@+id/footer_setting"
 		android:fadingEdge="none"
+		android:smoothScrollbar="true"
 		android:fadingEdgeLength="0dp"
 		android:scrollbars="none"
 		android:cacheColorHint="#00000000"

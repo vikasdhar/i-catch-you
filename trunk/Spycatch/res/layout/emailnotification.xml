@@ -93,7 +93,7 @@
 					android:tag="*Send To Email"
 					/>	
 			</RelativeLayout>
-			<RelativeLayout
+			<!-- <RelativeLayout
 				android:id="@+id/View_Weekdays"
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
@@ -166,7 +166,7 @@
 					android:layout_below="@+id/txtView_ToTime"
 					android:tag="*Select To Time"
 					/>	
-			</RelativeLayout>
+			</RelativeLayout> -->
  		</LinearLayout>
  		
 		

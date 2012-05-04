@@ -2,7 +2,6 @@ package com.esp.spycatch.process;
 
 import java.util.ArrayList;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -18,39 +17,35 @@ import com.esp.spycatch.util.Pref;
 import com.esp.spycatch.util.Storage;
 import com.esp.spycatch.util.Utils;
 
-public class EmailReceiver extends BroadcastReceiver {
+public class EmailReceiver {
 
 	private String TAG = this.getClass().getSimpleName();
 	
 	private ArrayList<ImageBean> arrayListImage = new ArrayList<ImageBean>();
 	
-	@Override
-	public void onReceive(Context context, Intent intent) {
+	public void onEmailReceive(Context context, Intent intent) {
 	
 		Const.CONTEXT = context;
 		
 		Log.print(TAG, "|**|**|  EMAIL SERVICE RUNNING |**|**|");
 		
 		if(!Pref.getValue("EMAIL_SEND_TO","").equals("")){
-			
-			if (Utils.matchDay(Pref.getValue("EMAIL_WEEK_DAYS", ""))) {
-	
-				if (Utils.IsBetween(Utils.getTimeToMilisecond(Pref.getValue(
-						"EMAIL_FROM_TIME", "")), Utils.getTimeToMilisecond(Utils
-						.currentTimeMilisecond()), Utils.getTimeToMilisecond(Pref
-						.getValue("EMAIL_TO_TIME", "")))) {
+				
+				if (Utils.matchDay(Pref.getValue("WEEK_DAYS", ""))) {
+		
+					if (Utils.IsBetween(Utils.getTimeToMilisecond(Pref.getValue(
+							"FROM_TIME", "")), Utils.getTimeToMilisecond(Utils
+							.currentTimeMilisecond()), Utils.getTimeToMilisecond(Pref
+							.getValue("TO_TIME", "")))) {
+						
+						new SendingEmail().execute();
+					}
 					
-					new SendingEmail().execute();
-				}
+					
+				}//match days 
 				
-				
-			}//match days 
-			
-		}// send to
+			}// send to
 		
-		
-		
-	
 	}
 	
 	private class SendingEmail extends AsyncTask<Void,Void, Integer>{
@@ -60,9 +55,6 @@ public class EmailReceiver extends BroadcastReceiver {
 		protected void onPreExecute() {
 			super.onPreExecute();
 			Log.print("SendingEmail |=> ","onPreExecute");
-			
-	
-			
 		}
 		@Override
 		protected Integer doInBackground(Void... params) {

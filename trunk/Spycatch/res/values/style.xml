@@ -9,10 +9,10 @@
 	    <item name="android:backgroundDimEnabled">false</item>
 	  </style>
   
-    <style name="Theme.Light.SpyCatch" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+    <style name="Theme.Light.SpyCatch" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowBackground">@drawable/bg_page</item>
+        <!-- <item name="android:windowBackground">@drawable/bg_page</item> -->
     </style>
     
     <style name="Theme.Dialog.SpyCatch" parent="@android:style/Theme.Dialog">

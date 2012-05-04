@@ -2,6 +2,8 @@ package com.esp.spycatch.bean;
 
 public class ImageBean {
 	
+	
+
 	public int imageID;
 	public String fileName;
 	public int doEmail;
@@ -9,6 +11,8 @@ public class ImageBean {
 	public int doFacebook;
 	public long createdDate;
 	public String thumbnail;
+	public String lat;
+	public String lon;
 	
 	public String getThumbnail() {
 		return thumbnail;
@@ -66,7 +70,21 @@ public class ImageBean {
 		this.imageID = imageID;
 	}
 
-	
+	public String getLat() {
+		return lat;
+	}
+
+	public void setLat(String lat) {
+		this.lat = lat;
+	}
+
+	public String getLon() {
+		return lon;
+	}
+
+	public void setLon(String lon) {
+		this.lon = lon;
+	}
 	
 	
 }

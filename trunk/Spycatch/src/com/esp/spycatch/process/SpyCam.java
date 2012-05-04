@@ -11,7 +11,8 @@ public class SpyCam extends BroadcastReceiver{
 
 	@Override
 	public void onReceive(Context context, Intent arg1) {	
-		Log.debug(this.getClass().toString(),"Launched");
+		Log.print("SpyCam :: Action :: ",arg1.getAction());
+		
 		context.startActivity(new Intent(context,SpyCamActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 	}
 }

@@ -5,7 +5,6 @@ import java.io.IOException;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
-import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.media.AudioManager;
 import android.util.AttributeSet;

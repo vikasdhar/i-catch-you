@@ -73,7 +73,7 @@ public class DBHelper extends SQLiteOpenHelper {
 	}
 
 	private void doUpdate0() {
-		this.execute("CREATE TABLE Image (ImageID INTEGER PRIMARY KEY, FileName TEXT, Thumbnail Text, DoEmail Integer, DoFacebook Integer, DoMMS Integer, CreatedDate INTEGER)");
+		this.execute("CREATE TABLE Image (ImageID INTEGER PRIMARY KEY, FileName TEXT, Thumbnail Text, DoEmail Integer, DoFacebook Integer, DoMMS Integer, CreatedDate INTEGER, Lat TEXT, Lon TEXT)");
 		
 		
 //		this.execute("INSERT INTO Image (FileName, Thumbnail, DoEmail, DoMMs, DoFacebook, CreatedDate)Values ( '1','1',0,0,0,1200)");
