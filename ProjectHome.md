@@ -1,0 +1,1 @@
+Access front camera to capture Person face and send to device owner email and facebook or mms in android
